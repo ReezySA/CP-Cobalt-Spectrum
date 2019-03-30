@@ -38,23 +38,30 @@ def comptonScatter(E):
     
     theta = np.arange(0,np.pi,0.01)   #range of possible theta angles (I beleive if we decrease 0.1 we will get a better resoultion)
 
+    #probability for different scattering angles in Compton Effect is given by Klein-Nishina Forumula:
+
     P = 1/(1+(E/(m_e))*(1-np.cos(theta)))
-
-    #probability for different scattering angles in Compton Effect is given by Klein-Nishina Forumula
-
     KN = (alpha**2)*(rc**2)*(P**2)* (P+ P**(-1) - (np.sin(theta)**2) )/2
     
-    #choose a random scattering angle according to the Klein-Nishina distribution
+    #return energy according to Compton Scatter Equation and randomly generated theta  
 
     totalSigma = sum(KN)  #total cross section(barns) - by integrating under Klein-Nishma Dist.
-    randomTheta = np.random.choice(theta, 1,p=KN/totalSigma)
+    randomTheta = np.random.choice(theta, 1,p=KN/totalSigma) 
+
+
+    randomPhi = np.random.uniform(0,2*np.pi)   
     
+    #plot
+
     plt.scatter(np.arange(0,np.pi,0.01), np.random.choice(theta, 315,p=KN/sum(KN)))
     #plt.plot(theta,KN)
 
     plt.show()
 
-comptonScatter(1.3)
+    Eprime = E/(1+(E/(m_e))*(1-np.cos(randomTheta))) #energy of scattered photon
+    return [Eprime,randomPhi,randomTheta] #return energy according to Compton Scatter Equation and randomly generated theta
+
+
 
 
 
