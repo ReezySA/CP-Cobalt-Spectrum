@@ -3,6 +3,8 @@
 import numpy as np
 import numpy.random as ran
 
+import matplotlib.pyplot as plt
+
 # from path import setParam, getParam
 
 import time     # implementing dead time
@@ -23,6 +25,45 @@ offset = 25         # mm, distance of detector from source, +z direction
 sheild_thicc = 2    # mm, around the dectector
 deadtime = 0.01     # s, optional? (non-trivial)
 meandist = 1        # mm, mean distnce path travels in detector
+
+
+##################################################################
+#general functions which can be called easily
+
+def comptonScatter(E):
+
+    m_e = 0.5109989461   #MeV/c^2
+    c = 299792458 #m/s
+    alpha = 1/137 #fine structure constant
+    rc = 0.38616 #pm -> reduced Compton wavelength of an electron
+    
+    theta = np.arange(0,180,0.1)   #range of possible theta angles (I beleive if we decrease 0.1 we will get a better resoultion)
+
+    P = 1/(1+(E/(m_e*c**2))*(1-np.cos(theta)))
+
+    #probability for different scattering angles in Compton Effect is given by Klein-Nishina Forumula
+
+    KN = (alpha**2)*(rc**2)*(P**2)* (P+ P**(-1) - (np.sin(theta)**2) )/2
+
+    #choose a random scattering angle according to the Klein-Nishina distribution
+
+    #total cross section(barns) - by integrating under Klein-Nishma Dist.
+    
+    
+    print( np.random.choice(theta, 1,p=KN/sum(KN))) 
+
+    plt.scatter(np.arange(0,180,0.1), np.random.choice(theta, 1800,p=KN/sum(KN)))
+
+    plt.show()
+
+comptonScatter(1.3)
+
+
+
+
+##################################################################
+
+
 
 def attentuate(mac, rho):      # calculate a distance x travelled by a photon through some medium before an interaction
     num = ran.rand()
