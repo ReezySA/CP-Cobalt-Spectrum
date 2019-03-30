@@ -48,11 +48,13 @@ def comptonScatter(E):
     #choose a random scattering angle according to the Klein-Nishina distribution
 
     #total cross section(barns) - by integrating under Klein-Nishma Dist.
+    
+    
+    print( np.random.choice(theta, 1,p=KN/sum(KN))) 
 
-    plt.plot(theta, KN/sum(KN))
-   
+    plt.scatter(np.arange(0,180,0.1), np.random.choice(theta, 1800,p=KN/sum(KN)))
+
     plt.show()
-    #print(np.random.RandomState.choice(KN, ))
 
 comptonScatter(1.3)
 
