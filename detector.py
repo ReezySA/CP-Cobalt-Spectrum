@@ -24,6 +24,33 @@ sheild_thicc = 2    # mm, around the dectector
 deadtime = 0.01     # s, optional? (non-trivial)
 meandist = 1        # mm, mean distnce path travels in detector
 
+
+##################################################################
+#general functions which can be called easily
+
+def comptonEq(E, theta, phi):
+
+    m_e = 0.5109989461   #MeV/c^2
+    c = 299792458 #m/s
+    alpha = 1/137 #fine structure constant
+    rc = 0.38616 #pm -> reduced Compton wavelength of an electron
+    
+    theta = ran.randint(0,181)
+
+
+    P = 1/(1+(E/(m_e*c**2))*(1-np.cos(theta)))
+
+    #probability for different scattering angles in Compton Effect is given by Klein-Nishina Forumula
+
+    KN = (alpha**2)*(rc**2)*(P**2)* (P+ P**(-1) - (np.sin(theta)**2) )/2
+
+
+
+
+##################################################################
+
+
+
 def attentuate(mac, rho):      # calculate a distance x travelled by a photon through some medium before an interaction
     num = ran.rand()
     x = np.log(num)/(-rho*mac)
