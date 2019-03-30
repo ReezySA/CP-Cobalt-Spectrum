@@ -3,14 +3,19 @@
 import numpy as np
 import numpy.random as ran
 
-from path import setParam, getParam
+# from path import setParam, getParam
 
 import time     # implementing dead time
 
 
 # Have the dectector geometry 
-#test
 
+Alrho = 2.7         # density of Al (g/cm3)
+AlmacCS = 5.482e-02          # mass attenuation coeff for Al at 1.25 MeV for Compton scattering
+AlmacPE =  1.688e-05         # mass attenuation coeff for Al at 1.25 Mev for photoelectric absorption
+# NaIrho =
+# NaImacCS =
+# NaImacPE =
 Al_thicc = 0.3      # mm, Al infront of the detector
 det_r = 40          # mm, detector radius
 det_h = 40          # mm, detector height
@@ -19,11 +24,15 @@ sheild_thicc = 2    # mm, around the dectector
 deadtime = 0.01     # s, optional? (non-trivial)
 meandist = 1        # mm, mean distnce path travels in detector
 
+def attentuate(mac, rho):      # calculate a distance x travelled by a photon through some medium before an interaction
+    num = ran.rand()
+    x = np.log(num)/(-rho*mac)
+    return x
 
 def setgeometry(lst):   # optional
     print ("")
     
-def enterDect():    # there is a chance of the path deflecting of the Al shielding
+def enterDect():    # there is a chance of the path deflecting off the Al shielding
     print ("")
     return False
     
@@ -55,3 +64,5 @@ def main():         # the path hits the dectector, deal with it here        # mi
         # check if it remains in the detector
             # if it remains, calculate energy lost
             # else see if it was deflected by the shielding around the detector
+
+enterDect()
