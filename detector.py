@@ -17,7 +17,7 @@ AlmacPE =  1.688e-05         # mass attenuation coeff for Al at 1.25 Mev for pho
 # NaImacCS =
 # NaImacPE =
 Al_thicc = 0.3      # mm, Al infront of the detector
-det_r = 40          # mm, detector radius
+det_r = 20          # mm, detector radius
 det_h = 40          # mm, detector height
 offset = 25         # mm, distance of detector from source, +z direction
 sheild_thicc = 2    # mm, around the dectector
@@ -32,9 +32,18 @@ def attentuate(mac, rho):      # calculate a distance x travelled by a photon th
 def setgeometry(lst):   # optional
     print ("")
     
-def enterDect():    # there is a chance of the path deflecting off the Al shielding
-    print ("")
-    return False
+def enterDect(r):    # there is a chance of the path deflecting off the Al shielding (r is vector in spherical)
+    d = 25.3
+    rho = np.sqrt((d*np.tan(r[1]* np.pi / 180))**2 + (d*np.tan(r[2]* np.pi / 180))**2)  # rho position of photon in cylindrical
+    magr = np.sqrt(d**2 + rho**2)   # distance travelled from origin
+    maxr = (magr/rho) * (det_r-rho)     # maximum allowed subsequent travel distance limited by radius of AL
+    maxl = (magr/d) * Al_thicc      # maximum allowed subsequent travel distance limited by length of Al
+    maxx = min(maxr, maxl)
+    x = attentuate(AlmacCS+AlmacPE, Alrho)
+    if x < maxx:
+        print 'photon goes home'
+        return False
+    return True
     
 def inDetector():   # check if path is still in the detector
     print ("")
@@ -65,4 +74,5 @@ def main():         # the path hits the dectector, deal with it here        # mi
             # if it remains, calculate energy lost
             # else see if it was deflected by the shielding around the detector
 
-enterDect()
+r = (1.17,1,1)
+enterDect(r)
