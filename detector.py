@@ -29,23 +29,30 @@ def attentuate(mac, rho):      # calculate a distance x travelled by a photon th
     x = np.log(num)/(-rho*mac)
     return x
 
+def maxDistance(z, l):     # calculates the maximum allowed travel distance before exiting a volume. Should be compared to x from "attenuate" to determine if an interaction occrus
+    d = z
+    rho = np.sqrt((d*np.tan(r[1]* np.pi / 180))**2 + (d*np.tan(r[2]* np.pi / 180))**2)  # rho position of photon in cylindrical
+    magr = np.sqrt(d**2 + rho**2)   # distance travelled from origin
+    maxr = (magr/rho) * (det_r-rho)     # maximum allowed subsequent travel distance limited by radius of AL
+    maxl = (magr/d) * l     # maximum allowed subsequent travel distance limited by length of Al
+    maxx = min(maxr, maxl)
+    return maxx
+
 def setgeometry(lst):   # optional
     print ("")
     
 def enterDect(r):    # there is a chance of the path deflecting off the Al shielding (r is vector in spherical)
-    d = 25.3
-    rho = np.sqrt((d*np.tan(r[1]* np.pi / 180))**2 + (d*np.tan(r[2]* np.pi / 180))**2)  # rho position of photon in cylindrical
-    magr = np.sqrt(d**2 + rho**2)   # distance travelled from origin
-    maxr = (magr/rho) * (det_r-rho)     # maximum allowed subsequent travel distance limited by radius of AL
-    maxl = (magr/d) * Al_thicc      # maximum allowed subsequent travel distance limited by length of Al
-    maxx = min(maxr, maxl)
+    z = 25
+    maxx = maxDistance(z, Al_thicc)
+    print maxx
     x = attentuate(AlmacCS+AlmacPE, Alrho)
     if x < maxx:
         print 'photon goes home'
         return False
     return True
-    
-def inDetector():   # check if path is still in the detector
+
+def inDetector():   # photon is now in the scintillator
+
     print ("")
     return False
 
