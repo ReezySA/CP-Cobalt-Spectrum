@@ -9,7 +9,7 @@ import time     # implementing dead time
 
 
 # Have the dectector geometry 
-
+#test
 
 Al_thicc = 0.3      # mm, Al infront of the detector
 det_r = 40          # mm, detector radius
