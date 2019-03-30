@@ -3,6 +3,8 @@
 import numpy as np
 import numpy.random as ran
 
+import matplotlib.pyplot as plt
+
 # from path import setParam, getParam
 
 import time     # implementing dead time
@@ -28,21 +30,31 @@ meandist = 1        # mm, mean distnce path travels in detector
 ##################################################################
 #general functions which can be called easily
 
-def comptonEq(E, theta, phi):
+def comptonScatter(E):
 
     m_e = 0.5109989461   #MeV/c^2
     c = 299792458 #m/s
     alpha = 1/137 #fine structure constant
     rc = 0.38616 #pm -> reduced Compton wavelength of an electron
     
-    theta = ran.randint(0,181)
-
+    theta = np.arange(0,180,0.1)   #range of possible theta angles (I beleive if we decrease 0.1 we will get a better resoultion)
 
     P = 1/(1+(E/(m_e*c**2))*(1-np.cos(theta)))
 
     #probability for different scattering angles in Compton Effect is given by Klein-Nishina Forumula
 
     KN = (alpha**2)*(rc**2)*(P**2)* (P+ P**(-1) - (np.sin(theta)**2) )/2
+
+    #choose a random scattering angle according to the Klein-Nishina distribution
+
+    #total cross section(barns) - by integrating under Klein-Nishma Dist.
+
+    plt.plot(theta, KN/sum(KN))
+   
+    plt.show()
+    #print(np.random.RandomState.choice(KN, ))
+
+comptonScatter(1.3)
 
 
 
@@ -77,19 +89,4 @@ def distTrav(energy):     # distance the particle travels, take compton and phot
     print ("")
     return 0
 
-def main():         # the path hits the dectector, deal with it here        # might not be needed
-    print ("")
-    
-    if not enterDect(): # path is deflected by Al_thicc
-        return -1
-    
-    indect = True   # short for in the detector
-    while indect:
-        dist_travelled = distTrav(energy)   # calculate this via the exp distribution using meandist (non-trivial)
-        
-        # calculate new particle position
-        # check if it remains in the detector
-            # if it remains, calculate energy lost
-            # else see if it was deflected by the shielding around the detector
 
-enterDect()
