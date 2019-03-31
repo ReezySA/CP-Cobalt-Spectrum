@@ -24,7 +24,7 @@ meandist = 1        # mm, mean distnce path travels in detector
 
 
 
-def comptonScatter(EList, E, r0):
+def comptonScatter(E):
     m_e = 0.5109989461   #MeV/c^2
     alpha = 1/137 #fine structure constant
     rc = 0.38616 #pm -> reduced Compton wavelength of an electron
@@ -46,10 +46,11 @@ def comptonScatter(EList, E, r0):
     #plt.plot(theta,KN)
     # plt.show()
     Eprime = E/(1+(E/(m_e))*(1-np.cos(randomTheta))) #energy of scattered photon
-    EList.append(Eprime)
-    r = (Eprime,randomPhi,randomTheta)
+    # EList.append(Eprime[0])
+    r = (Eprime[0],randomPhi,randomTheta)
+    return r
     # return [Eprime,randomPhi,randomTheta] #return energy according to Compton Scatter Equation and randomly generated theta
-    inDetector(EList, r, r0)
+    # inDetector(EList, r, r0)
 
 
 def attentuate(mac, rho):      # calculate a distance x travelled by a photon through some medium before an interaction
@@ -68,7 +69,6 @@ def enterDect(r):    # there is a chance of the path deflecting off the Al shiel
     z = 25
     r0 = (rho, phi, z)
     maxx = maxDistance(r, r0)
-    # print maxx
     x = attentuate(AlmacCS+AlmacPE, Alrho)
     if x < maxx:
         print('photon goes home')
@@ -79,20 +79,24 @@ def enterDect(r):    # there is a chance of the path deflecting off the Al shiel
 def inDetector(EList, r, r0):   # photon is now in the scintillator
     maxx = maxDistance(r, r0)
     x = attentuate(NaImacCS + NaImacPE, NaIrho)
-    r01 = (r0[0], r0[1], r0[2]+x)
     print x < maxx
     if x < maxx:    # an interaction happens
         interval = (NaImacCS/NaImacPE) + 1
         num = ran.random()*interval
         if num < 1.:    # PE happens
             print 'PE'
-            return r[0]
+            EList.append(r[0])
+            print EList
+            return EList
         else:
             print 'scattering'
-            comptonScatter(EList, r[0], r01)
+            comptr = comptonScatter(r[0])
+            EList.append(r[0] - comptr[0])
+            r01 = (r0[0], r0[1], r0[2] + x)
+            inDetector(EList, comptr, r01)
     elif len(EList) > 0:
         print 'compt is true'
-        print len(EList)
+        print EList
         return EList
     else:
         return False
@@ -142,7 +146,6 @@ def main():         # the path hits the dectector, deal with it here        # mi
 def do(r, r0):
     l = []
     E = inDetector(l, r, r0)
-    print E
     return E
 
 r = (1.17,1,1)
