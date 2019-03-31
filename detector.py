@@ -15,9 +15,9 @@ import time     # implementing dead time
 Alrho = 2.7         # density of Al (g/cm3)
 AlmacCS = 5.482e-02          # mass attenuation coeff for Al at 1.25 MeV for Compton scattering
 AlmacPE =  1.688e-05         # mass attenuation coeff for Al at 1.25 Mev for photoelectric absorption
-# NaIrho =
-# NaImacCS =
-# NaImacPE =
+NaIrho = 3.67
+NaImacCS = 4.846e-02
+NaImacPE = 2.240e-03
 Al_thicc = 0.3      # mm, Al infront of the detector
 det_r = 20          # mm, detector radius
 det_h = 40          # mm, detector height
@@ -50,13 +50,13 @@ def comptonScatter(E):
     #total cross section(barns) - by integrating under Klein-Nishma Dist.
     
     
-    print( np.random.choice(theta, 1,p=KN/sum(KN))) 
+    # print( np.random.choice(theta, 1,p=KN/sum(KN)))
 
-    plt.scatter(np.arange(0,180,0.1), np.random.choice(theta, 1800,p=KN/sum(KN)))
+    # plt.scatter(np.arange(0,180,0.1), np.random.choice(theta, 1800,p=KN/sum(KN)))
 
-    plt.show()
+    # plt.show()
 
-comptonScatter(1.3)
+# comptonScatter(1.3)
 
 
 
@@ -70,9 +70,16 @@ def attentuate(mac, rho):      # calculate a distance x travelled by a photon th
     x = np.log(num)/(-rho*mac)
     return x
 
-def maxDistance(z, l):     # calculates the maximum allowed travel distance before exiting a volume. Should be compared to x from "attenuate" to determine if an interaction occrus
-    d = z
-    rho = np.sqrt((d*np.tan(r[1]* np.pi / 180))**2 + (d*np.tan(r[2]* np.pi / 180))**2)  # rho position of photon in cylindrical
+# def maxDistance(r, z, l):     # calculates the maximum allowed travel distance before exiting a volume. Should be compared to x from "attenuate" to determine if an interaction occrus
+#     d = z
+#     rho = np.sqrt((d*np.tan(r[1]* np.pi / 180))**2 + (d*np.tan(r[2]* np.pi / 180))**2)  # rho position of photon in cylindrical
+#     magr = np.sqrt(d**2 + rho**2)   # distance travelled from origin
+#     maxr = (magr/rho) * (det_r-rho)     # maximum allowed subsequent travel distance limited by radius of AL
+#     maxl = (magr/d) * l     # maximum allowed subsequent travel distance limited by length of Al
+#     maxx = min(maxr, maxl)
+#     return maxx
+
+def maxDistance(r, r0):     # calculates the maximum allowed travel distance before exiting a volume. Should be compared to x from "attenuate" to determine if an interaction occrus
     magr = np.sqrt(d**2 + rho**2)   # distance travelled from origin
     maxr = (magr/rho) * (det_r-rho)     # maximum allowed subsequent travel distance limited by radius of AL
     maxl = (magr/d) * l     # maximum allowed subsequent travel distance limited by length of Al
@@ -83,8 +90,11 @@ def setgeometry(lst):   # optional
     print ("")
     
 def enterDect(r):    # there is a chance of the path deflecting off the Al shielding (r is vector in spherical)
+    rho = np.sqrt((25 * np.tan(r[1] * np.pi / 180)) ** 2 + (25 * np.tan(r[2] * np.pi / 180)) ** 2)
+    phi = r[2]
     z = 25
-    maxx = maxDistance(z, Al_thicc)
+    r0 = (rho, phi, z)
+    maxx = maxDistance(r, r0)
     print maxx
     x = attentuate(AlmacCS+AlmacPE, Alrho)
     if x < maxx:
@@ -92,9 +102,17 @@ def enterDect(r):    # there is a chance of the path deflecting off the Al shiel
         return False
     return True
 
-def inDetector():   # photon is now in the scintillator
-
-    print ("")
+def inDetector(r, r0):   # photon is now in the scintillator
+    maxx = maxDistance(r, r0)
+    x = attentuate(NaImacCS + NaImacPE, NaIrho)
+    if x < maxx:    # an interaction happens
+        interval = (NaImacCS/NaImacPE) + 1
+        num = ran.random()*interval
+        print num
+        if num < 1.:    # PE happens
+            return r[0]
+        else:
+            comptonScatter(r[0])
     return False
 
 def energyLost():   # because of the deflection
@@ -122,5 +140,5 @@ def main():         # the path hits the dectector, deal with it here        # mi
             # if it remains, calculate energy lost
             # else see if it was deflected by the shielding around the detector
 
-r = (1.17,1,1)
-enterDect(r)
+# r = (1.17,1,1)
+# inDetector(r)
