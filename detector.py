@@ -7,6 +7,25 @@ import matplotlib.pyplot as plt
 
 # from path import setParam, getParam
 
+crossSectionsFile = np.genfromtxt('./crossSections.txt',skip_header=2)
+
+crossSections = {}
+for i in crossSectionsFile:
+    crossSections[i[0]] = {'cs': i[1], 'pe': i[2]}
+
+xfit = []
+yfit = []
+for i in crossSectionsFile:
+    xfit.append(i[0])
+    yfit.append(i[1])
+
+print xfit
+print yfit
+# csFunction = np.polyfit(xfit, yfit, 100)
+
+# plt.plot(csFunction)
+plt.scatter(xfit, yfit)
+plt.show()
 
 Alrho = 2.7         # density of Al (g/cm3)
 AlmacCS = 5.482e-02          # mass attenuation coeff for Al at 1.25 MeV for Compton scattering
@@ -22,7 +41,7 @@ sheild_thicc = 2    # mm, around the dectector
 deadtime = 0.01     # s, optional? (non-trivial)
 meandist = 1        # mm, mean distnce path travels in detector
 
-
+EList = []
 
 def comptonScatter(E):
     m_e = 0.5109989461   #MeV/c^2
@@ -76,30 +95,33 @@ def enterDect(r):    # there is a chance of the path deflecting off the Al shiel
     return True
 
 
-def inDetector(EList, r, r0):   # photon is now in the scintillator
+def inDetector(r, r0):   # photon is now in the scintillator
     maxx = maxDistance(r, r0)
     x = attentuate(NaImacCS + NaImacPE, NaIrho)
-    print x < maxx
-    if x < maxx:    # an interaction happens
+    if x < maxx:            # an interaction happens
         interval = (NaImacCS/NaImacPE) + 1
         num = ran.random()*interval
-        if num < 1.:    # PE happens
-            print 'PE'
+        if num < 1.:            # PE happens
+            # print 'PE'
             EList.append(r[0])
-            print EList
-            return EList
-        else:
-            print 'scattering'
+            # return (EList, 0, 0)
+            return
+        else:                # sca
+            # scattering happens
+            # print 'scattering'
             comptr = comptonScatter(r[0])
             EList.append(r[0] - comptr[0])
             r01 = (r0[0], r0[1], r0[2] + x)
-            inDetector(EList, comptr, r01)
-    elif len(EList) > 0:
-        print 'compt is true'
-        print EList
-        return EList
-    else:
+            # return (EList, comptr, r01)
+            # return
+            inDetector(comptr, r01)
+    elif len(EList) > 0:        # x exceeds maximum x so return energy list if it has values
+        # print 'compted'
+        # return (EList, 0, 0)
+        return
+    else:           # no interactions happened, photon goes away
         return False
+
 
 
 
@@ -144,10 +166,29 @@ def main():         # the path hits the dectector, deal with it here        # mi
 
 
 def do(r, r0):
-    l = []
-    E = inDetector(l, r, r0)
-    return E
+    # l = []
+    # E = inDetector(l, r, r0)
+    inDetector(r, r0)
+    # print EList
+    # return E
 
 r = (1.17,1,1)
+r2 = (1.33,1,1)
 r0 = (0,0,0)
-print do(r, r0)
+# do(r, r0)
+
+# fullList = []
+# for i in range(10000):
+#     num = ran.rand()
+#     if num > 0.5:
+#         do(r, r0)
+#     else:
+#         do(r2, r0)
+#     for j in EList:
+#         fullList.append(j)
+#     EList = []
+
+# print fullList
+
+# plt.hist(fullList, bins=100)
+# plt.show()
