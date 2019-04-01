@@ -44,13 +44,45 @@ def comptonScatter(E):
     m_e = 0.5109989461   #MeV/c^2
     alpha = 1/137 #fine structure constant
     rc = 0.38616 #pm -> reduced Compton wavelength of an electron
+    c = 3*(10**(8))
     theta = np.arange(0,np.pi,0.01)   #range of possible theta angles (I beleive if we decrease 0.1 we will get a better resoultion)
 
     #probability for different scattering angles in Compton Effect is given by Klein-Nishina Forumula:
 
-    P = 1/(1+(E/(m_e))*(1-np.cos(theta)))
-    KN = (alpha**2)*(rc**2)*(P**2) * (P+ P**(-1) - (np.sin(theta)**2) )/2
-    #return energy according to Compton Scatter Equation and randomly generated theta
+  
+
+    #probability for different scattering angles in Compton Effect is given by Klein-Nishina Forumula:
+
+    KN = np.pi* (rc**2)*((m_e)*(c**2)/E)*Z*(1/e + e)*(1-(e*(np.sin(theta)**2))/(1+e**2))
+
+    e_0 = (m_e*(c**2))/((m_e*(c**2))+2*E) #backward scatter(theta = pi)
+
+    #combined composition 
+    alpha1 = np.log(1/e_0)
+    alpha2 = (1-(e_0)**2)/2
+    f1 = 1/(alpha1*e)
+    f2 = e/alpha2
+
+    g = 1-(e/(1+e**2))(np.sin(theta))**2  #Monte Carlo Rejection Function
+
+    #Monte Carlo
+    ############################################ 
+
+    r = np.random.uniform(0,1,3) #generate 3 random numbers between 0 and 1
+
+    #selection process for f
+    f=0
+    if(r[0] < alpha1/(alpha1+alpha2)):
+
+        e = np.exp(-alpha1*r[1])
+        f= f1   
+    else:
+
+        e**2 = (e_0)**2 + (1-(e_0)**2)*r[1]
+        f=f2
+    
+        
+
 
     totalSigma = sum(KN)  #total cross section(barns) - by integrating under Klein-Nishma Dist.
     randomTheta = np.random.choice(theta, 1,p=KN/totalSigma)
