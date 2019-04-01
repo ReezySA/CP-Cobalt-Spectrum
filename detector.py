@@ -1,4 +1,3 @@
-
 from __future__ import division
 import numpy as np
 import numpy.random as ran
@@ -8,11 +7,6 @@ import matplotlib.pyplot as plt
 # from path import setParam, getParam
 
 crossSectionsFile = np.genfromtxt('./crossSections.txt',skip_header=2)
-
-# crossSections = {}
-# for i in crossSectionsFile:
-#     crossSections[i[0]] = {'cs': i[1], 'pe': i[2]}
-
 crossSectionEnergies = []
 crossSectionCS = []
 crossSectionPE = []
@@ -20,8 +14,6 @@ for i in crossSectionsFile:
     crossSectionEnergies.append(i[0])
     crossSectionCS.append(i[1])
     crossSectionPE.append(i[2])
-
-
 
 
 Alrho = 2.7         # density of Al (g/cm3)
@@ -39,6 +31,7 @@ deadtime = 0.01     # s, optional? (non-trivial)
 meandist = 1        # mm, mean distnce path travels in detector
 
 EList = []
+
 
 def comptonScatter(E):
     m_e = 0.5109989461   #MeV/c^2
@@ -63,7 +56,7 @@ def comptonScatter(E):
     # plt.show()
     Eprime = E/(1+(E/(m_e))*(1-np.cos(randomTheta))) #energy of scattered photon
     # EList.append(Eprime[0])
-    r = (Eprime[0],randomPhi,randomTheta)
+    r = (Eprime[0],randomTheta[0],randomPhi)
     return r
     # return [Eprime,randomPhi,randomTheta] #return energy according to Compton Scatter Equation and randomly generated theta
     # inDetector(EList, r, r0)
@@ -76,30 +69,23 @@ def attentuate(mac, rho):      # calculate a distance x travelled by a photon th
 
 
 def maxDistance(r, r0, x):     # calculates the maximum allowed travel distance before exiting a volume. Should be compared to x from "attenuate" to determine if an interaction occrus
-    # x1 = r0[0] * np.cos(r0[1])
-    # y1 = r0[0] * np.sin(r0[1])
-    # z1 = r0[2]
-    # x2 = x * np.sin(r[2]) * np.cos(r[1])
-    # y2 = x * np.sin(r[2]) * np.sin(r[1])
-    # z2 = x * np.cos(r[2])
-    # x3 = x1 + x2
-    # y3 = y1 + y2
-    # z3 = z1 + z2
-    # print x3,y3,z3
     rho1 = r0[0]
     phi1 = r0[1]
     z1 = r0[2]
-    rho2 = x*np.sin(r[1])
+    oldtheta = np.arctan(rho1/z1)
+    # print 'old theata', oldtheta
+    rho2 = x*np.sin(r[1]+oldtheta)
     phi2 = r[2]
-    z2 = x*np.cos(r[1])
+    z2 = x*np.cos(r[1]+oldtheta)
     rho3 = rho1 + rho2
     phi3 = phi1 + phi2
     z3 = z1 + z2
+    # print 'v1 =', rho1, phi1, z1
+    # print 'v2 = ', rho2, phi2, z2
     if (rho3 < det_r) & (z3 < det_h):
         return [True, (rho3,phi3,z3)]
     else:
-        return False
-    # return max(0, 40 - r0[2])
+        return [False, (rho3,phi3,z3)]
 
 
 def enterDect(r):    # there is a chance of the path deflecting off the Al shielding (r is vector in spherical)
@@ -107,57 +93,51 @@ def enterDect(r):    # there is a chance of the path deflecting off the Al shiel
     phi = r[2]
     z = 25
     r0 = (rho, phi, z)
-    maxx = maxDistance(r, r0)
     x = attentuate(AlmacCS+AlmacPE, Alrho)
-    if x < maxx:
-        print('photon goes home')
+    maxx = maxDistance(r, r0, x)
+    if maxx[0] == True:
+        # print 'photon goes home'
         return False
-    return True
+    else:
+        return True
 
-# def energyRes(E):
-    # num =
+
+def energyRes(E):
+    if E == 0:
+        return 0
+    fwhm = 0.03*E
+    sigma = fwhm/2.355
+    Espread = ran.normal(E, sigma)
+    return Espread
 
 
 def inDetector(r, r0):   # photon is now in the scintillator
     sigmaCS = np.interp(r[0], crossSectionEnergies, crossSectionCS)
-    sigmaPE = (np.interp(r[0], crossSectionEnergies, crossSectionPE))
+    sigmaPE = np.interp(r[0], crossSectionEnergies, crossSectionPE)
     x = attentuate(sigmaCS + sigmaPE, NaIrho)
+    # print 'x =', x
     maxx = maxDistance(r, r0, x)
-    print maxx[0]
+    # print maxx[0]
     if maxx[0] == True:            # an interaction happens
         interval = (sigmaCS/sigmaPE) + 1
         num = ran.random()*interval
         if num < 1.:            # PE happens
-            print 'PE'
-            EList.append(r[0])
-            # return (EList, 0, 0)
+            # print 'PE'
+            EList.append(energyRes(r[0]))
             return
         else:                # scattering happens
-            print 'scattering'
+            # print 'scattering'
             comptr = comptonScatter(r[0])
-            EList.append(r[0] - comptr[0])
+            EList.append(energyRes(r[0] - comptr[0]))
             r0new = maxx[1]
-            # return (EList, comptr, r01)
-            # return
+            # print 'new pos = ',r0new
             inDetector(comptr, r0new)
     elif len(EList) > 0:        # x exceeds maximum x so return energy list if it has values
-        print 'escaped'
-        # return (EList, 0, 0)
+        # print 'escaped'
         return
     else:           # no interactions happened, photon goes away
         return False
 
-
-
-
-# def maxDistance(r, z, l):     # calculates the maximum allowed travel distance before exiting a volume. Should be compared to x from "attenuate" to determine if an interaction occrus
-#     d = z
-#     rho = np.sqrt((d*np.tan(r[1]* np.pi / 180))**2 + (d*np.tan(r[2]* np.pi / 180))**2)  # rho position of photon in cylindrical
-#     magr = np.sqrt(d**2 + rho**2)   # distance travelled from origin
-#     maxr = (magr/rho) * (det_r-rho)     # maximum allowed subsequent travel distance limited by radius of AL
-#     maxl = (magr/d) * l     # maximum allowed subsequent travel distance limited by length of Al
-#     maxx = min(maxr, maxl)
-#     return maxx
 
 
 
@@ -190,33 +170,31 @@ def main():         # the path hits the dectector, deal with it here        # mi
             # else see if it was deflected by the shielding around the detector
 
 
-def do(r, r0):
-    # l = []
-    # E = inDetector(l, r, r0)
-    inDetector(r, r0)
-    # print EList
-    # return E
 
 r = (1.17,1,1)
 r2 = (1.33,1,1)
-r0 = (0,0,0)
-do(r, r0)
-print EList
-print sum(EList)
-#
-# fullList = []
-# for i in range(10000):
-#     num = ran.rand()
-#     if num > 0.5:
-#         do(r, r0)
-#     else:
-#         do(r2, r0)
-    # for j in EList:
-    #     fullList.append(j)
-    # fullList.append(np.sum(EList))
-    # EList = []
+r0 = (0,0,0.1)
+
+# inDetector(r, r0)
+# print EList
+# print sum(EList)
+
+fullList = []
+for i in range(10000):
+    EList = []
+    num = ran.rand()
+    if num > 0.5:
+        inDetector(r, r0)
+    else:
+        inDetector(r2, r0)
+    # print EList
+    deposit = np.sum(EList)
+    if deposit > 0:
+        fullList.append(deposit)
+    
+
 
 # print fullList
 
-# plt.hist(fullList, bins=100)
-# plt.show()
+plt.hist(fullList, bins=500)
+plt.show()
