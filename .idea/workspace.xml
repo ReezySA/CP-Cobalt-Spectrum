@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="9fe58ef3-6c21-4f59-a71f-1d7201e8c694" name="Default Changelist" comment="" />
+    <list default="true" id="9fe58ef3-6c21-4f59-a71f-1d7201e8c694" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/detector.py" beforeDir="false" afterPath="$PROJECT_DIR$/detector.py" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -13,8 +15,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/detector.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="153">
-              <caret line="173" lean-forward="true" selection-start-line="173" selection-end-line="173" />
+            <state relative-caret-position="414">
+              <caret line="93" column="14" selection-start-line="93" selection-start-column="14" selection-end-line="93" selection-end-column="14" />
               <folding>
                 <element signature="e#1#32#0" expanded="true" />
               </folding>
@@ -231,8 +233,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/detector.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="173" lean-forward="true" selection-start-line="173" selection-end-line="173" />
+        <state relative-caret-position="414">
+          <caret line="93" column="14" selection-start-line="93" selection-start-column="14" selection-end-line="93" selection-end-column="14" />
           <folding>
             <element signature="e#1#32#0" expanded="true" />
           </folding>

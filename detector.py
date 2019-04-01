@@ -9,23 +9,20 @@ import matplotlib.pyplot as plt
 
 crossSectionsFile = np.genfromtxt('./crossSections.txt',skip_header=2)
 
-crossSections = {}
+# crossSections = {}
+# for i in crossSectionsFile:
+#     crossSections[i[0]] = {'cs': i[1], 'pe': i[2]}
+
+crossSectionEnergies = []
+crossSectionCS = []
+crossSectionPE = []
 for i in crossSectionsFile:
-    crossSections[i[0]] = {'cs': i[1], 'pe': i[2]}
+    crossSectionEnergies.append(i[0])
+    crossSectionCS.append(i[1])
+    crossSectionPE.append(i[2])
 
-xfit = []
-yfit = []
-for i in crossSectionsFile:
-    xfit.append(i[0])
-    yfit.append(i[1])
 
-print xfit
-print yfit
-# csFunction = np.polyfit(xfit, yfit, 100)
 
-# plt.plot(csFunction)
-plt.scatter(xfit, yfit)
-plt.show()
 
 Alrho = 2.7         # density of Al (g/cm3)
 AlmacCS = 5.482e-02          # mass attenuation coeff for Al at 1.25 MeV for Compton scattering
@@ -78,8 +75,31 @@ def attentuate(mac, rho):      # calculate a distance x travelled by a photon th
     return x
 
 
-def maxDistance(r, r0):     # calculates the maximum allowed travel distance before exiting a volume. Should be compared to x from "attenuate" to determine if an interaction occrus
-    return max(0, 40 - r0[2])
+def maxDistance(r, r0, x):     # calculates the maximum allowed travel distance before exiting a volume. Should be compared to x from "attenuate" to determine if an interaction occrus
+    # x1 = r0[0] * np.cos(r0[1])
+    # y1 = r0[0] * np.sin(r0[1])
+    # z1 = r0[2]
+    # x2 = x * np.sin(r[2]) * np.cos(r[1])
+    # y2 = x * np.sin(r[2]) * np.sin(r[1])
+    # z2 = x * np.cos(r[2])
+    # x3 = x1 + x2
+    # y3 = y1 + y2
+    # z3 = z1 + z2
+    # print x3,y3,z3
+    rho1 = r0[0]
+    phi1 = r0[1]
+    z1 = r0[2]
+    rho2 = x*np.sin(r[1])
+    phi2 = r[2]
+    z2 = x*np.cos(r[1])
+    rho3 = rho1 + rho2
+    phi3 = phi1 + phi2
+    z3 = z1 + z2
+    if (rho3 < det_r) & (z3 < det_h):
+        return [True, (rho3,phi3,z3)]
+    else:
+        return False
+    # return max(0, 40 - r0[2])
 
 
 def enterDect(r):    # there is a chance of the path deflecting off the Al shielding (r is vector in spherical)
@@ -94,29 +114,34 @@ def enterDect(r):    # there is a chance of the path deflecting off the Al shiel
         return False
     return True
 
+# def energyRes(E):
+    # num =
+
 
 def inDetector(r, r0):   # photon is now in the scintillator
-    maxx = maxDistance(r, r0)
-    x = attentuate(NaImacCS + NaImacPE, NaIrho)
-    if x < maxx:            # an interaction happens
-        interval = (NaImacCS/NaImacPE) + 1
+    sigmaCS = np.interp(r[0], crossSectionEnergies, crossSectionCS)
+    sigmaPE = (np.interp(r[0], crossSectionEnergies, crossSectionPE))
+    x = attentuate(sigmaCS + sigmaPE, NaIrho)
+    maxx = maxDistance(r, r0, x)
+    print maxx[0]
+    if maxx[0] == True:            # an interaction happens
+        interval = (sigmaCS/sigmaPE) + 1
         num = ran.random()*interval
         if num < 1.:            # PE happens
-            # print 'PE'
+            print 'PE'
             EList.append(r[0])
             # return (EList, 0, 0)
             return
-        else:                # sca
-            # scattering happens
-            # print 'scattering'
+        else:                # scattering happens
+            print 'scattering'
             comptr = comptonScatter(r[0])
             EList.append(r[0] - comptr[0])
-            r01 = (r0[0], r0[1], r0[2] + x)
+            r0new = maxx[1]
             # return (EList, comptr, r01)
             # return
-            inDetector(comptr, r01)
+            inDetector(comptr, r0new)
     elif len(EList) > 0:        # x exceeds maximum x so return energy list if it has values
-        # print 'compted'
+        print 'escaped'
         # return (EList, 0, 0)
         return
     else:           # no interactions happened, photon goes away
@@ -175,8 +200,10 @@ def do(r, r0):
 r = (1.17,1,1)
 r2 = (1.33,1,1)
 r0 = (0,0,0)
-# do(r, r0)
-
+do(r, r0)
+print EList
+print sum(EList)
+#
 # fullList = []
 # for i in range(10000):
 #     num = ran.rand()
@@ -184,9 +211,10 @@ r0 = (0,0,0)
 #         do(r, r0)
 #     else:
 #         do(r2, r0)
-#     for j in EList:
-#         fullList.append(j)
-#     EList = []
+    # for j in EList:
+    #     fullList.append(j)
+    # fullList.append(np.sum(EList))
+    # EList = []
 
 # print fullList
 
