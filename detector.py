@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 # from path import setParam, getParam
 
-crossSectionsFile = np.genfromtxt('./crossSections.txt',skip_header=2)
+crossSectionsFile = np.genfromtxt('./crossSections.txt', skip_header=2)
 crossSectionEnergies = []
 crossSectionCS = []
 crossSectionPE = []
@@ -20,95 +20,67 @@ Alrho = 2.7         # density of Al (g/cm3)
 AlmacCS = 5.482e-02          # mass attenuation coeff for Al at 1.25 MeV for Compton scattering
 AlmacPE =  1.688e-05         # mass attenuation coeff for Al at 1.25 Mev for photoelectric absorption
 NaIrho = 3.67
-NaImacCS = 4.846e-02
-NaImacPE = 2.240e-03
 Al_thicc = 0.3      # mm, Al infront of the detector
 det_r = 20          # mm, detector radius
 det_h = 40          # mm, detector height
 offset = 25         # mm, distance of detector from source, +z direction
-sheild_thicc = 2    # mm, around the dectector
-deadtime = 0.01     # s, optional? (non-trivial)
-meandist = 1        # mm, mean distnce path travels in detector
 
-EList = []
 
 
 def comptonScatter(E):
     m_e = 0.5109989461   #MeV/c^2
     rc = 0.38616 #pm -> reduced Compton wavelength of an electron
-    c = 3*(10**(8))
-    theta = np.arange(0,np.pi,0.01)   #range of possible theta angles (I beleive if we decrease 0.1 we will get a better resoultion)
+    # c = 3*(10**(8))
+    # theta = np.arange(0,np.pi,0.01)   #range of possible theta angles (I beleive if we decrease 0.1 we will get a better resoultion)
     randomTheta=1
     e=(m_e/(m_e+E)*(1-np.cos(randomTheta)))
-    Z=64
-    
-
+    # Z=64
 
     #probability for different scattering angles in Compton Effect is given by Klein-Nishina Forumula:
 
-    KN = np.pi* (rc**2)*(m_e/E)*Z*(1/e + e)*(1-(e*(np.sin(randomTheta)**2))/(1+e**2))
-
+    # KN = np.pi* (rc**2)*(m_e/E)*Z*(1/e + e)*(1-(e*(np.sin(randomTheta)**2))/(1+e**2))
     e_0 = m_e/(m_e+2*E) #backward scatter(theta = pi)
 
     #combined composition (Monte Carlo Algorithm)
+
     alpha1 = np.log(1/e_0)
     alpha2 = (1-(e_0)**2)/2
-    def f1(e):
-        f11 = 1/(alpha1*e)
-        return f11
-    def f2(e):
-        f22 = e/alpha2
-        return f22
-    
+    # def f1(e):
+    #     f11 = 1/(alpha1*e)
+    #     return f11
+    # def f2(e):
+    #     f22 = e/alpha2
+    #     return f22
     def g(e,x):
         gg = 1-((e*x)/(1+e**2)) #Monte Carlo Rejection Function
-        return gg   
-
+        return gg
 
     #Monte Carlo Algorithm
-    ############################################ 
 
     r = np.random.uniform(0,1,3) #generate 3 random numbers between 0 and 1
     t = m_e*(1-e)/(E*e)
-    f=0
-
+    # f=0
     while(g(e,t*(2-t)) >= r[2]):
-
-        
         r = np.random.uniform(0,1,3) #generate 3 random numbers between 0 and 1
+        #selection process for f
+        if (r[0] < alpha1/(alpha1+alpha2)):
 
-        #selection process for f    
-       
-        if(r[0] < alpha1/(alpha1+alpha2)):
-
-            f= f1(np.exp(-alpha1*r[1]))  
+            # f= f1(np.exp(-alpha1*r[1]))
             e =  np.exp(-alpha1*r[1])
-
         else:
-
-            f=f2((e_0)**2 + (1-(e_0)**2)*r[1])
+            # f=f2((e_0)**2 + (1-(e_0)**2)*r[1])
             e = np.sqrt((e_0)**2 + (1-(e_0)**2)*r[1])
-
         t = m_e*(1-e)/(E*e)
-        
-    #######################################################
-
     randomTheta = np.arccos(1-(m_e/(e*E))*(1-e))  #theta with accepted e
-    EPrime = e*E      
+    EPrime = e*E
     randomPhi = np.random.uniform(0,2*np.pi)  #sandom phi between 0 and 2pi
-    
-    r = (EPrime,randomPhi,randomTheta)
+    r = (EPrime,randomTheta,randomPhi)
     return r
 
 
-for i in range(500):
-
-    print(comptonScatter(1.3))
-    
-
-def attentuate(mac, rho):      # calculate a distance x travelled by a photon through some medium before an interaction
+def attenuate(sigma, density):      # calculate a distance x travelled by a photon through some medium before an interaction
     num = ran.rand()
-    x = np.log(num)/(-rho*mac)
+    x = np.log(num)/(-density*sigma)*10     ## x in mm
     return x
 
 
@@ -117,7 +89,7 @@ def maxDistance(r, r0, x):     # calculates the maximum allowed travel distance 
     phi1 = r0[1]
     z1 = r0[2]
     oldtheta = np.arctan(rho1/z1)
-    # print 'old theata', oldtheta
+    # print 'old theta', oldtheta
     rho2 = x*np.sin(r[1]+oldtheta)
     phi2 = r[2]
     z2 = x*np.cos(r[1]+oldtheta)
@@ -137,7 +109,7 @@ def enterDect(r):    # there is a chance of the path deflecting off the Al shiel
     phi = r[2]
     z = 25
     r0 = (rho, phi, z)
-    x = attentuate(AlmacCS+AlmacPE, Alrho)
+    x = attenuate(AlmacCS+AlmacPE, Alrho)
     maxx = maxDistance(r, r0, x)
     if maxx[0] == True:
         # print 'photon goes home'
@@ -156,9 +128,9 @@ def energyRes(E):
 
 
 def inDetector(r, r0):   # photon is now in the scintillator
-    sigmaCS = np.interp(r[0], crossSectionEnergies, crossSectionCS)
+    sigmaCS = (np.interp(r[0], crossSectionEnergies, crossSectionCS))
     sigmaPE = np.interp(r[0], crossSectionEnergies, crossSectionPE)
-    x = attentuate(sigmaCS + sigmaPE, NaIrho)
+    x = attenuate(sigmaCS + sigmaPE, NaIrho)
     # print 'x =', x
     maxx = maxDistance(r, r0, x)
     # print maxx[0]
@@ -183,40 +155,8 @@ def inDetector(r, r0):   # photon is now in the scintillator
         return False
 
 
-
-
-def setgeometry(lst):  # optional
-    print ("")
-
-def energyLost():   # because of the deflection
-    print ("")
-
-def deflect():      # the path is deflected, set new path and energy lost
-    print ("")
-   
-def distTrav(energy):     # distance the particle travels, take compton and photo effect into account, tempted to make another class for this
-    print ("")
-    return 0
-
-def main():         # the path hits the dectector, deal with it here        # might not be needed
-    print ("")
-    
-    if not enterDect(): # path is deflected by Al_thicc
-        return -1
-    
-    indect = True   # short for in the detector
-    while indect:
-        dist_travelled = distTrav(energy)   # calculate this via the exp distribution using meandist (non-trivial)
-        
-        # calculate new particle position
-        # check if it remains in the detector
-            # if it remains, calculate energy lost
-            # else see if it was deflected by the shielding around the detector
-
-
-
-r = (1.17,1,1)
-r2 = (1.33,1,1)
+r = (1.17,0.1,0.1)
+r2 = (1.33,0.1,0.1)
 r0 = (0,0,0.1)
 
 # inDetector(r, r0)
@@ -224,21 +164,64 @@ r0 = (0,0,0.1)
 # print sum(EList)
 
 fullList = []
-for i in range(10000):
+for i in range(100000):
     EList = []
     num = ran.rand()
     if num > 0.5:
         inDetector(r, r0)
     else:
         inDetector(r2, r0)
-    # print EList
     deposit = np.sum(EList)
     if deposit > 0:
         fullList.append(deposit)
-    
 
 
 # print fullList
 
-plt.hist(fullList, bins=500)
+plt.hist(fullList, bins=1000, histtype='step')
 plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+def setgeometry(lst):  # optional
+    print ("")
+
+
+def energyLost():  # because of the deflection
+    print ("")
+
+
+def deflect():  # the path is deflected, set new path and energy lost
+    print ("")
+
+
+def distTrav(
+        energy):  # distance the particle travels, take compton and photo effect into account, tempted to make another class for this
+    print ("")
+    return 0
+
+
+def main():  # the path hits the dectector, deal with it here        # might not be needed
+    print ("")
+
+    if not enterDect():  # path is deflected by Al_thicc
+        return -1
+
+    indect = True  # short for in the detector
+    while indect:
+        dist_travelled = distTrav(energy)  # calculate this via the exp distribution using meandist (non-trivial)
+
+        # calculate new particle position
+        # check if it remains in the detector
+        # if it remains, calculate energy lost
+        # else see if it was deflected by the shielding around the detector
+
