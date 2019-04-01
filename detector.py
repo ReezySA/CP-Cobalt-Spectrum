@@ -28,52 +28,37 @@ offset = 25         # mm, distance of detector from source, +z direction
 
 
 def comptonScatter(E):
-    m_e = 0.5109989461   #MeV/c^2
-    rc = 0.38616 #pm -> reduced Compton wavelength of an electron
-    # c = 3*(10**(8))
-    # theta = np.arange(0,np.pi,0.01)   #range of possible theta angles (I beleive if we decrease 0.1 we will get a better resoultion)
-    randomTheta=1
-    e=(m_e/(m_e+E)*(1-np.cos(randomTheta)))
-    # Z=64
+    m_e = 0.5109989461      # MeV/c^2
+    randomTheta = 1
+    e = (m_e/(m_e+E)*(1-np.cos(randomTheta)))
 
     #probability for different scattering angles in Compton Effect is given by Klein-Nishina Forumula:
 
-    # KN = np.pi* (rc**2)*(m_e/E)*Z*(1/e + e)*(1-(e*(np.sin(randomTheta)**2))/(1+e**2))
-    e_0 = m_e/(m_e+2*E) #backward scatter(theta = pi)
+    e_0 = m_e/(m_e+2*E)     # backward scatter(theta = pi)
 
     #combined composition (Monte Carlo Algorithm)
 
     alpha1 = np.log(1/e_0)
     alpha2 = (1-(e_0)**2)/2
-    # def f1(e):
-    #     f11 = 1/(alpha1*e)
-    #     return f11
-    # def f2(e):
-    #     f22 = e/alpha2
-    #     return f22
+
     def g(e,x):
-        gg = 1-((e*x)/(1+e**2)) #Monte Carlo Rejection Function
+        gg = 1-((e*x)/(1+e**2))     # Monte Carlo Rejection Function
         return gg
 
     #Monte Carlo Algorithm
 
-    r = np.random.uniform(0,1,3) #generate 3 random numbers between 0 and 1
+    r = np.random.uniform(0,1,3)    # generate 3 random numbers between 0 and 1
     t = m_e*(1-e)/(E*e)
-    # f=0
-    while(g(e,t*(2-t)) >= r[2]):
-        r = np.random.uniform(0,1,3) #generate 3 random numbers between 0 and 1
-        #selection process for f
+    while (g(e,t*(2-t)) >= r[2]):
+        r = np.random.uniform(0,1,3)        # generate 3 random numbers between 0 and 1
         if (r[0] < alpha1/(alpha1+alpha2)):
-
-            # f= f1(np.exp(-alpha1*r[1]))
             e =  np.exp(-alpha1*r[1])
         else:
-            # f=f2((e_0)**2 + (1-(e_0)**2)*r[1])
             e = np.sqrt((e_0)**2 + (1-(e_0)**2)*r[1])
         t = m_e*(1-e)/(E*e)
-    randomTheta = np.arccos(1-(m_e/(e*E))*(1-e))  #theta with accepted e
+    randomTheta = np.arccos(1-(m_e/(e*E))*(1-e))    # theta with accepted e
     EPrime = e*E
-    randomPhi = np.random.uniform(0,2*np.pi)  #sandom phi between 0 and 2pi
+    randomPhi = np.random.uniform(0,2*np.pi)    # sandom phi between 0 and 2pi
     r = (EPrime,randomTheta,randomPhi)
     return r
 
@@ -84,21 +69,30 @@ def attenuate(sigma, density):      # calculate a distance x travelled by a phot
     return x
 
 
+lines = []
 def maxDistance(r, r0, x):     # calculates the maximum allowed travel distance before exiting a volume. Should be compared to x from "attenuate" to determine if an interaction occrus
     rho1 = r0[0]
     phi1 = r0[1]
     z1 = r0[2]
-    oldtheta = np.arctan(rho1/z1)
-    # print 'old theta', oldtheta
+    # oldtheta = np.arctan(rho1/z1)
+    oldtheta = 0
     rho2 = x*np.sin(r[1]+oldtheta)
     phi2 = r[2]
     z2 = x*np.cos(r[1]+oldtheta)
     rho3 = rho1 + rho2
     phi3 = phi1 + phi2
     z3 = z1 + z2
+    x1 = z1
+    x2 = z3
+    y1 = rho1*np.cos(phi1)
+    y2 = rho3*np.cos(phi3)
+    line = [(x1, x2), (y1, y2)]
+    originline = [(-25,0), (0,r0[0])]
+    lines.append(originline)
+    lines.append(line)
     # print 'v1 =', rho1, phi1, z1
     # print 'v2 = ', rho2, phi2, z2
-    if (rho3 < det_r) & (z3 < det_h):
+    if (np.abs(rho3) < det_r) & (z3 < det_h) & (z3 > 0):
         return [True, (rho3,phi3,z3)]
     else:
         return [False, (rho3,phi3,z3)]
@@ -133,7 +127,6 @@ def inDetector(r, r0):   # photon is now in the scintillator
     x = attenuate(sigmaCS + sigmaPE, NaIrho)
     # print 'x =', x
     maxx = maxDistance(r, r0, x)
-    # print maxx[0]
     if maxx[0] == True:            # an interaction happens
         interval = (sigmaCS/sigmaPE) + 1
         num = ran.random()*interval
@@ -155,25 +148,34 @@ def inDetector(r, r0):   # photon is now in the scintillator
         return False
 
 
-r = (1.17,0.1,0.1)
-r2 = (1.33,0.1,0.1)
-r0 = (0,0,0.1)
+# r1 = (1.17,0.1,0.1)
+# r2 = (1.33,0.1,0.1)
+# r0 = (5,0,0.1)
 
 # inDetector(r, r0)
 # print EList
 # print sum(EList)
 
+allLines = []
 fullList = []
 for i in range(100000):
     EList = []
     num = ran.rand()
+    r1 = (1.17, (ran.rand()*2-1)*np.pi/6, 0)
+    r2 = (1.33, (ran.rand()*2-1)*np.pi/6, 0)
+    rho1 = 25 * np.tan(r1[1])
+    rho2 = 25 * np.tan(r2[1])
+    r01 = (rho1, r1[2], 0.1)
+    r02 = (rho2, r2[2], 0.1)
     if num > 0.5:
-        inDetector(r, r0)
+        inDetector(r1, r01)
     else:
-        inDetector(r2, r0)
+        inDetector(r2, r02)
     deposit = np.sum(EList)
     if deposit > 0:
         fullList.append(deposit)
+    allLines.append(lines)
+    lines = []
 
 
 # print fullList
@@ -181,9 +183,27 @@ for i in range(100000):
 plt.hist(fullList, bins=1000, histtype='step')
 plt.show()
 
+# print allLines
 
-
-
+def detectorPlot():
+    plt.plot((0,40), (-20,-20), 'k')
+    plt.plot((0,40), (20,20), 'k')
+    plt.plot((0,0), (-20,20), 'k')
+    plt.plot((40,40), (-20,20), 'k')
+    plt.xlabel('Distance along detector axis (mm)')
+    plt.ylabel('Height (mm)')
+    for i in allLines:
+        it = 0
+        r = ran.rand()
+        g = ran.rand()
+        b = ran.rand()
+        for j in i:
+            if (it > 0) & (j[0][0] == -25):
+                continue
+            plt.plot(j[0], j[1], c=(r,g,b))
+            it +=1
+    plt.scatter(-25,0, c='g')
+    plt.show()
 
 
 
