@@ -13,8 +13,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/detector.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="153">
-              <caret line="173" lean-forward="true" selection-start-line="173" selection-end-line="173" />
+            <state relative-caret-position="613">
+              <caret line="96" lean-forward="true" selection-start-line="96" selection-end-line="96" />
               <folding>
                 <element signature="e#1#32#0" expanded="true" />
               </folding>
@@ -231,8 +231,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/detector.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="153">
-          <caret line="173" lean-forward="true" selection-start-line="173" selection-end-line="173" />
+        <state relative-caret-position="613">
+          <caret line="96" lean-forward="true" selection-start-line="96" selection-end-line="96" />
           <folding>
             <element signature="e#1#32#0" expanded="true" />
           </folding>
