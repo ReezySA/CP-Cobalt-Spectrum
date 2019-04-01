@@ -122,8 +122,9 @@ def inDetector(r, r0):   # photon is now in the scintillator
     sigmaCS = np.interp(r[0], crossSectionEnergies, crossSectionCS)
     sigmaPE = (np.interp(r[0], crossSectionEnergies, crossSectionPE))
     x = attentuate(sigmaCS + sigmaPE, NaIrho)
+    print x
     maxx = maxDistance(r, r0, x)
-    print maxx[0]
+    print maxx[1]
     if maxx[0] == True:            # an interaction happens
         interval = (sigmaCS/sigmaPE) + 1
         num = ran.random()*interval
