@@ -42,71 +42,77 @@ EList = []
 
 def comptonScatter(E):
     m_e = 0.5109989461   #MeV/c^2
-    alpha = 1/137 #fine structure constant
     rc = 0.38616 #pm -> reduced Compton wavelength of an electron
     c = 3*(10**(8))
     theta = np.arange(0,np.pi,0.01)   #range of possible theta angles (I beleive if we decrease 0.1 we will get a better resoultion)
-    e=1
+    randomTheta=1
+    e=(m_e/(m_e+E)*(1-np.cos(randomTheta)))
     Z=64
     
 
 
     #probability for different scattering angles in Compton Effect is given by Klein-Nishina Forumula:
 
-    KN = np.pi* (rc**2)*((m_e)*(c**2)/E)*Z*(1/e + e)*(1-(e*(np.sin(theta)**2))/(1+e**2))
+    KN = np.pi* (rc**2)*(m_e/E)*Z*(1/e + e)*(1-(e*(np.sin(randomTheta)**2))/(1+e**2))
 
-    e_0 = (m_e*(c**2))/((m_e*(c**2))+2*E) #backward scatter(theta = pi)
+    e_0 = m_e/(m_e+2*E) #backward scatter(theta = pi)
 
-    #combined composition 
+    #combined composition (Monte Carlo Algorithm)
     alpha1 = np.log(1/e_0)
     alpha2 = (1-(e_0)**2)/2
     def f1(e):
-        f1 = 1/(alpha1*e)
+        f11 = 1/(alpha1*e)
+        return f11
     def f2(e):
-        f2 = e/alpha2
+        f22 = e/alpha2
+        return f22
     
     def g(e,x):
-        g = 1-((e*x)/(1+e**2)) #Monte Carlo Rejection Function
-        return g   
+        gg = 1-((e*x)/(1+e**2)) #Monte Carlo Rejection Function
+        return gg   
 
-    #Monte Carlo
+
+    #Monte Carlo Algorithm
     ############################################ 
 
     r = np.random.uniform(0,1,3) #generate 3 random numbers between 0 and 1
-    t = m_e*(c**2)*(1-e)/(E*e)
-    
+    t = m_e*(1-e)/(E*e)
+    f=0
+
     while(g(e,t*(2-t)) >= r[2]):
 
+        
         r = np.random.uniform(0,1,3) #generate 3 random numbers between 0 and 1
 
-        #selection process for f
-        f=0
+        #selection process for f    
+       
         if(r[0] < alpha1/(alpha1+alpha2)):
 
-            f= f1(np.exp(-alpha1*r[1]))   
+            f= f1(np.exp(-alpha1*r[1]))  
+            e =  np.exp(-alpha1*r[1])
 
         else:
 
-            f=f2(np.sqrt((e_0)**2 + (1-(e_0)**2)*r[1]))
+            f=f2((e_0)**2 + (1-(e_0)**2)*r[1])
+            e = np.sqrt((e_0)**2 + (1-(e_0)**2)*r[1])
 
-        t = m_e*(c**2)*(1-e)/(E*e)
+        t = m_e*(1-e)/(E*e)
+        
+    #######################################################
 
-
-    randomTHETA = np.arccos(1-(m_e*(c**2)/(e*E))*(1-e))  #theta with accepted e
+    randomTheta = np.arccos(1-(m_e/(e*E))*(1-e))  #theta with accepted e
     EPrime = e*E      
-
-   
     randomPhi = np.random.uniform(0,2*np.pi)  #sandom phi between 0 and 2pi
     
-
-    #Eprime = E/(1+(E/(m_e))*(1-np.cos(randomTheta))) #energy of scattered photon
-    # EList.append(Eprime[0])
-    r = (Eprime,randomPhi,randomTHETA)
+    r = (EPrime,randomPhi,randomTheta)
     return r
-    # return [Eprime,randomPhi,randomTheta] #return energy according to Compton Scatter Equation and randomly generated theta
-    # inDetector(EList, r, r0)
 
-print(comptonScatter(1.3))
+
+for i in range(500):
+
+    print(comptonScatter(1.3))
+    
+
 def attentuate(mac, rho):      # calculate a distance x travelled by a photon through some medium before an interaction
     num = ran.rand()
     x = np.log(num)/(-rho*mac)
