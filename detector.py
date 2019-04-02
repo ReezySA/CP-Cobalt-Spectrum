@@ -28,17 +28,15 @@ offset = 25         # mm, distance of detector from source, +z direction
 
 
 def comptonScatter(E):
-    m_e = 0.5109989461      # MeV/c^2
+    m_e = 0.5109989461      #mass of electron MeV/c^2
     randomTheta = 1
-    e = (m_e/(m_e+E)*(1-np.cos(randomTheta)))
+    e = (m_e/(m_e+E)*(1-np.cos(randomTheta)))  #e = epsilon = EPrime/E
 
-    #probability for different scattering angles in Compton Effect is given by Klein-Nishina Forumula:
+    e_0 = m_e/(m_e+2*E)     #backward scatter(theta = pi)
 
-    e_0 = m_e/(m_e+2*E)     # backward scatter(theta = pi)
+    ##########  combined composition (Geant4 Monte Carlo Algorithm)  #################
 
-    #combined composition (Monte Carlo Algorithm)
-
-    alpha1 = np.log(1/e_0)
+    alpha1 = np.log(1/e_0)  #Klein-Nishina paramterised by alpha1 and alpha2  
     alpha2 = (1-(e_0)**2)/2
 
     def g(e,x):
@@ -56,9 +54,9 @@ def comptonScatter(E):
         else:
             e = np.sqrt((e_0)**2 + (1-(e_0)**2)*r[1])
         t = m_e*(1-e)/(E*e)
-    randomTheta = np.arccos(1-(m_e/(e*E))*(1-e))    # theta with accepted e
-    EPrime = e*E
-    randomPhi = np.random.uniform(0,2*np.pi)    # sandom phi between 0 and 2pi
+    randomTheta = np.arccos(1-(m_e/(e*E))*(1-e))    #finding theta with accepted e
+    EPrime = e*E                        
+    randomPhi = np.random.uniform(0,2*np.pi)    #random phi between 0 and 2pi
     r = (EPrime,randomTheta,randomPhi)
     return r
 
@@ -183,8 +181,9 @@ for i in range(100000):
 # print fullList
 
 plt.hist(fullList, bins=1000, histtype='step')
-plt.xlabel('Energy (MeV)')
-plt.ylabel('Counts')
+plt.xlabel(r"energy($MeV$)")
+plt.ylabel("counts")
+plt.xlim(0,1.4)
 plt.show()
 
 # print allLines
