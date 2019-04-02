@@ -74,11 +74,10 @@ def maxDistance(r, r0, x):     # calculates the maximum allowed travel distance 
     rho1 = r0[0]
     phi1 = r0[1]
     z1 = r0[2]
-    # oldtheta = np.arctan(rho1/z1)
-    oldtheta = 0
-    rho2 = x*np.sin(r[1]+oldtheta)
+    # print rho1
+    rho2 = x*np.sin(r[1])
     phi2 = r[2]
-    z2 = x*np.cos(r[1]+oldtheta)
+    z2 = x*np.cos(r[1])
     rho3 = rho1 + rho2
     phi3 = phi1 + phi2
     z3 = z1 + z2
@@ -87,7 +86,7 @@ def maxDistance(r, r0, x):     # calculates the maximum allowed travel distance 
     y1 = rho1*np.cos(phi1)
     y2 = rho3*np.cos(phi3)
     line = [(x1, x2), (y1, y2)]
-    originline = [(-25,0), (0,r0[0])]
+    originline = [(-25,0), (0, y1)]
     lines.append(originline)
     lines.append(line)
     # print 'v1 =', rho1, phi1, z1
@@ -122,7 +121,7 @@ def energyRes(E):
 
 
 def inDetector(r, r0):   # photon is now in the scintillator
-    sigmaCS = (np.interp(r[0], crossSectionEnergies, crossSectionCS))
+    sigmaCS = np.interp(r[0], crossSectionEnergies, crossSectionCS)
     sigmaPE = np.interp(r[0], crossSectionEnergies, crossSectionPE)
     x = attenuate(sigmaCS + sigmaPE, NaIrho)
     # print 'x =', x
@@ -137,10 +136,11 @@ def inDetector(r, r0):   # photon is now in the scintillator
         else:                # scattering happens
             # print 'scattering'
             comptr = comptonScatter(r[0])
+            rnew = (comptr[0], comptr[1], comptr[2] + r[1])
             EList.append(energyRes(r[0] - comptr[0]))
             r0new = maxx[1]
             # print 'new pos = ',r0new
-            inDetector(comptr, r0new)
+            inDetector(rnew, r0new)
     elif len(EList) > 0:        # x exceeds maximum x so return energy list if it has values
         # print 'escaped'
         return
@@ -161,15 +161,17 @@ fullList = []
 for i in range(100000):
     EList = []
     num = ran.rand()
-    r1 = (1.17, (ran.rand()*2-1)*np.pi/6, 0)
-    r2 = (1.33, (ran.rand()*2-1)*np.pi/6, 0)
-    rho1 = 25 * np.tan(r1[1])
-    rho2 = 25 * np.tan(r2[1])
+    r1 = (1.17, (ran.rand())*np.pi/6, ran.rand()*2*np.pi)
+    r2 = (1.33, (ran.rand())*np.pi/6, ran.rand()*2*np.pi)
+    rho1 = np.abs(25 * np.tan(r1[1]))
+    rho2 = np.abs(25 * np.tan(r2[1]))
     r01 = (rho1, r1[2], 0.1)
     r02 = (rho2, r2[2], 0.1)
     if num > 0.5:
+        # print r1
         inDetector(r1, r01)
     else:
+        # print r2
         inDetector(r2, r02)
     deposit = np.sum(EList)
     if deposit > 0:
@@ -205,7 +207,7 @@ def detectorPlot():
     plt.scatter(-25,0, c='g')
     plt.show()
 
-
+# detectorPlot()
 
 
 
