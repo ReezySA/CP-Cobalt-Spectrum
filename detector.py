@@ -183,6 +183,8 @@ for i in range(100000):
 # print fullList
 
 plt.hist(fullList, bins=1000, histtype='step')
+plt.xlabel('Energy (MeV)')
+plt.ylabel('Counts')
 plt.show()
 
 # print allLines
