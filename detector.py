@@ -161,8 +161,8 @@ fullList = []
 for i in range(100000):
     EList = []
     num = ran.rand()
-    r1 = (1.17, (ran.rand())*np.pi/6, ran.rand()*2*np.pi)
-    r2 = (1.33, (ran.rand())*np.pi/6, ran.rand()*2*np.pi)
+    r1 = (1.17, (ran.rand())*0.6747, ran.rand()*2*np.pi)
+    r2 = (1.33, (ran.rand())*0.6747, ran.rand()*2*np.pi)
     rho1 = np.abs(25 * np.tan(r1[1]))
     rho2 = np.abs(25 * np.tan(r2[1]))
     r01 = (rho1, r1[2], 0.1)
