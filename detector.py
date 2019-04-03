@@ -10,6 +10,8 @@ crossSectionsFile = np.genfromtxt('./crossSections.txt', skip_header=2)
 crossSectionEnergies = []
 crossSectionCS = []
 crossSectionPE = []
+EList = []
+allLines = []
 for i in crossSectionsFile:
     crossSectionEnergies.append(i[0])
     crossSectionCS.append(i[1])
@@ -119,6 +121,7 @@ def energyRes(E):
 
 
 def inDetector(r, r0):   # photon is now in the scintillator
+    #print (EList)
     sigmaCS = np.interp(r[0], crossSectionEnergies, crossSectionCS)
     sigmaPE = np.interp(r[0], crossSectionEnergies, crossSectionPE)
     x = attenuate(sigmaCS + sigmaPE, NaIrho)
@@ -146,45 +149,13 @@ def inDetector(r, r0):   # photon is now in the scintillator
         return False
 
 
-# r1 = (1.17,0.1,0.1)
-# r2 = (1.33,0.1,0.1)
-# r0 = (5,0,0.1)
-
-# inDetector(r, r0)
-# print EList
-# print sum(EList)
-
-allLines = []
-fullList = []
-for i in range(100000):
-    EList = []
-    num = ran.rand()
-    r1 = (1.17, (ran.rand())*0.6747, ran.rand()*2*np.pi)
-    r2 = (1.33, (ran.rand())*0.6747, ran.rand()*2*np.pi)
-    rho1 = np.abs(25 * np.tan(r1[1]))
-    rho2 = np.abs(25 * np.tan(r2[1]))
-    r01 = (rho1, r1[2], 0.1)
-    r02 = (rho2, r2[2], 0.1)
-    if num > 0.5:
-        # print r1
-        inDetector(r1, r01)
-    else:
-        # print r2
-        inDetector(r2, r02)
-    deposit = np.sum(EList)
-    if deposit > 0:
-        fullList.append(deposit)
-    allLines.append(lines)
-    lines = []
-
-
 # print fullList
-
-plt.hist(fullList, bins=1000, histtype='step')
-plt.xlabel(r"energy($MeV$)")
-plt.ylabel("counts")
-plt.xlim(0,1.4)
-plt.show()
+def plotFull(fullList):
+    plt.hist(fullList, bins=1000, histtype='step')
+    plt.xlabel(r"energy($MeV$)")
+    plt.ylabel("counts")
+    plt.xlim(0,1.4)
+    plt.show()
 
 # print allLines
 
@@ -209,3 +180,59 @@ def detectorPlot():
     plt.show()
 
 # detectorPlot()
+
+
+# r1 = (1.17,0.1,0.1)
+# r2 = (1.33,0.1,0.1)
+# r0 = (5,0,0.1)
+
+# inDetector(r, r0)
+# print EList
+# print sum(EList)
+
+def getfullList():
+    return fullList
+
+def setThings():
+    EList = []
+    allLines = []
+    fullList = []
+
+def runDet(r0, r1):
+    EList = []
+    #print (EList)
+    inDetector(r0, r1)
+    deposit = np.sum(EList)
+    if deposit > 0:
+        fullList.append(deposit)
+    allLines.append(lines)
+    lines = []
+
+if __name__ == "__main__":
+    allLines = []
+    fullList = []
+    print ("Run the code for the detector")
+    det = 1000    # for user input
+    det = int(input ("How many points do you want the source to generate? \n"))
+    for i in range(det):
+        EList = []
+        num = ran.rand()
+        r1 = (1.17, (ran.rand())*0.6747, ran.rand()*2*np.pi)
+        r2 = (1.33, (ran.rand())*0.6747, ran.rand()*2*np.pi)
+        rho1 = np.abs(25 * np.tan(r1[1]))
+        rho2 = np.abs(25 * np.tan(r2[1]))
+        r01 = (rho1, r1[2], 0.1)
+        r02 = (rho2, r2[2], 0.1)
+        if num > 0.5: # smaller 
+            #print (r1)
+            inDetector(r1, r01)
+        else:         # larger
+            # print r2
+            inDetector(r2, r02)
+        deposit = np.sum(EList)
+        if deposit > 0:
+            fullList.append(deposit)
+        allLines.append(lines)
+        lines = []
+    plotFull(fullList)
+    detectorPlot()

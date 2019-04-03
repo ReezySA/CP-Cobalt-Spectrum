@@ -30,14 +30,13 @@ def energy(npoints):
     return vals
     
 #plots the sphere to check that it is isotropic  
-def plot_sphere(n_emissions, ):
-    
-    #create a sphere
-    #phi = np.linspace(0, np.pi, 20)
-    #theta = np.linspace(0, 2 * np.pi, 40)
-    #x = np.outer(np.sin(theta), np.cos(phi))
-    #y = np.outer(np.sin(theta), np.sin(phi))
-    #z = np.outer(np.cos(theta), np.ones_like(phi))
+def plot_sphere(n_emissions ):
+
+    phi = np.linspace(0, np.pi, 20)
+    theta = np.linspace(0, 2 * np.pi, 40)
+    x = np.outer(np.sin(theta), np.cos(phi))
+    y = np.outer(np.sin(theta), np.sin(phi))
+    z = np.outer(np.cos(theta), np.ones_like(phi))
     
     
     xi, yi, zi = sample_spherical(n_emissions)
@@ -46,7 +45,9 @@ def plot_sphere(n_emissions, ):
     fig, ax = plt.subplots(1, 1, subplot_kw={'projection':'3d', 'aspect':'equal'})
     #ax.plot_wireframe(x, y, z, color='k', rstride=1, cstride=1)
     ax.scatter(xi, yi, zi, s=1, c='r', zorder=10)
+    plt.show()
+    #print (x)
     
 if (__name__ == '__main__'):
-    
+    print ("source")
     plot_sphere(10000)

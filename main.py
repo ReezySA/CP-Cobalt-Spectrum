@@ -1,29 +1,20 @@
 
 
-from source import decay
+from source import plot_sphere, sample_spherical, energy
+from path import run
+from detector import detectorPlot, plotFull, setThings, just
 
 # User interface
 
 
 def main():
-    print ("")
-    detections = 100    # for user input
     
-    lst = []    # collected energy loss
-    run = True
+    print ("Run the code for the source")
+    det = 1000    # for user input
+    det = int (input ("How many points do you want the source to generate? \n"))
     
-    while run:
-        
-        tmp = decay(detections) # tmp is a list to remain flexible
-        
-        for i in range(len(tmp)):   # put the energy loss in lst
-            if tmp[i] < 0:
-                run = False
-                break
-            lst += [tmp[i]]
-            
-    # make histograms here i guess
-    print (lst)
+    plot_sphere(det)
+    
     
 main()
     
