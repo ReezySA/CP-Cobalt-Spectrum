@@ -1,38 +1,49 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Apr  3 08:01:13 2019
 
+@author: rivan
+"""
+
+from matplotlib import pyplot as plt
+from mpl_toolkits.mplot3d import axes3d
 import numpy as np
-import numpy.random as ran
 
-import random
+def sample_spherical(npoints, ndim=3):
+    vec = np.random.randn(ndim, npoints)
+    vec /= np.linalg.norm(vec, axis=0)
+    return vec
 
-from threading import Thread    # each path a thread
-import thread
-
-from path import setParam
-
-# decay and initialize the path to be detected
-
-halflife = 0.1   # s
-halflife3 = "exp(i*pi/2)"
-
-
-def setpath(param):  # initialize the path parameters
-    print ("")
-    thread.start_new_thread( path.path(param), ("Thread-1", 2, ) )
-
-def decay():        # get decay particle
-    print ("")
+def energy(npoints):
     
-def collides():     # check if path collides with detector
-    print ("")
+    vals = np.random.rand(npoints)
+    for i in range(npoints):
 
-def main(runtime):    # main loop
+        if (vals[i]<0.5):
+            vals[i] = 1173
+                
+        else:
+            vals[i] = 1332
+        #print(vals[i])
+    return vals
     
-    time = 0
-    validpath = False
-    while not validpath:    # wait for a path that collides with the detector
-        energy, time += decay()     # TODO: set time till particle decays (exp decay, use halflife variable)
-        if time > runtime:  # exceeds time
-            return -1
-        
-        param = setpath()   # set a path for the ray to follow
-        param += [energy]
+    
+def plot_sphere(n_emissions, ):
+
+    phi = np.linspace(0, np.pi, 20)
+    theta = np.linspace(0, 2 * np.pi, 40)
+    x = np.outer(np.sin(theta), np.cos(phi))
+    y = np.outer(np.sin(theta), np.sin(phi))
+    z = np.outer(np.cos(theta), np.ones_like(phi))
+    
+    
+    xi, yi, zi = sample_spherical(n_emissions)
+    Ei = energy(n_emissions)
+    
+    fig, ax = plt.subplots(1, 1, subplot_kw={'projection':'3d', 'aspect':'equal'})
+    #ax.plot_wireframe(x, y, z, color='k', rstride=1, cstride=1)
+    ax.scatter(xi, yi, zi, s=1, c='r', zorder=10)
+    
+if (__name__ == '__main__'):
+    
+    plot_sphere(10000)
