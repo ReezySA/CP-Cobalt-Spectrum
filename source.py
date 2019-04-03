@@ -9,11 +9,13 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 import numpy as np
 
+#creates random points on a sphere
 def sample_spherical(npoints, ndim=3):
     vec = np.random.randn(ndim, npoints)
     vec /= np.linalg.norm(vec, axis=0)
     return vec
 
+#creates random energy values
 def energy(npoints):
     
     vals = np.random.rand(npoints)
@@ -27,7 +29,7 @@ def energy(npoints):
         #print(vals[i])
     return vals
     
-    
+#plots the sphere to check that it is isotropic  
 def plot_sphere(n_emissions, ):
 
     phi = np.linspace(0, np.pi, 20)
