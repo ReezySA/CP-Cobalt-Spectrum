@@ -31,12 +31,13 @@ def energy(npoints):
     
 #plots the sphere to check that it is isotropic  
 def plot_sphere(n_emissions, ):
-
-    phi = np.linspace(0, np.pi, 20)
-    theta = np.linspace(0, 2 * np.pi, 40)
-    x = np.outer(np.sin(theta), np.cos(phi))
-    y = np.outer(np.sin(theta), np.sin(phi))
-    z = np.outer(np.cos(theta), np.ones_like(phi))
+    
+    #create a sphere
+    #phi = np.linspace(0, np.pi, 20)
+    #theta = np.linspace(0, 2 * np.pi, 40)
+    #x = np.outer(np.sin(theta), np.cos(phi))
+    #y = np.outer(np.sin(theta), np.sin(phi))
+    #z = np.outer(np.cos(theta), np.ones_like(phi))
     
     
     xi, yi, zi = sample_spherical(n_emissions)
